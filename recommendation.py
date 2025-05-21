@@ -79,7 +79,7 @@ def bollywood_page():
         try:
             movie_index = df[df['Movie_Name'] == movie].index[0]
             distances = similarity[movie_index]
-            movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:7]
+            movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:4]
 
             recommended_movies = []
             recommended_posters = []
@@ -136,7 +136,7 @@ def hollywood_page():
 
         movie_index = matches.index[0]
         distances = h_similarity[movie_index]
-        movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:7]
+        movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:4]
 
         recommended_movies = []
         recommended_posters = []
@@ -148,7 +148,7 @@ def hollywood_page():
             recommended_posters.append(fetch_poster(movie_id))
         return recommended_movies, recommended_posters
 
-    selected_movie = st.selectbox("Select a Hollywood movie:", [''] + list(new_df['title'].str.title().values))
+    selected_movie = st.selectbox("Select a Hollywood movie:", ['select one movie...'] + list(new_df['title'].str.title().values))
 
     if selected_movie:
         if st.button("Get Recommendations"):
@@ -162,7 +162,7 @@ def hollywood_page():
                         st.caption(recommended_movies[i])
             st.markdown("---")
 
-    col_back_h = st.columns([1, 2, 1])
+    col_back_h = st.columns([1, 1, 1])
     with col_back_h[1]:
         if st.button("🔙 Back to Genres"):
             st.session_state.page = 'home'
