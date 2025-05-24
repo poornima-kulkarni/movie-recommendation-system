@@ -75,27 +75,36 @@ def bollywood_page():
     similarity = joblib.load('similarity_bollywood.joblib')
 
     def recommend(movie):
-        movie = movie.lower()
-        try:
-            movie_index = df[df['Movie_Name'] == movie].index[0]
-            distances = similarity[movie_index]
-            movie_list = sorted(list(enumerate(distances)), reverse=True, key=lambda x: x[1])[1:4]
-
-            recommended_movies = []
-            recommended_posters = []
-            for i in movie_list:
-                title = df.iloc[i[0]].Movie_Name.title()
-                recommended_movies.append(title)
-                movie_id = get_movie_id(title)
-                time.sleep(0.3)  # Rate limiting
-                if movie_id:
-                    recommended_posters.append(fetch_poster(movie_id))
-                else:
-                    recommended_posters.append("https://via.placeholder.com/300x450?text=No+Image")
-            return recommended_movies, recommended_posters
-        except IndexError:
+        movie = movie.lower().strip()
+        
+        # Ensure movie exists in the dataset
+        matched_movies = df[df['Movie_Name'].str.lower().str.strip() == movie]
+        if matched_movies.empty:
             st.warning(f"Movie '{movie.title()}' not found in the Bollywood dataset.")
             return [], []
+
+        movie_index = matched_movies.index[0]
+        distances = similarity[movie_index]
+
+        # Get top 3 most similar movies
+        movie_list = sorted(enumerate(distances), key=lambda x: x[1], reverse=True)
+        movie_list = [i for i in movie_list if i[0] != movie_index][:3]
+
+        recommended_movies = []
+        recommended_posters = []
+
+        for i in movie_list:
+            title = df.iloc[i[0]].Movie_Name.title()
+            recommended_movies.append(title)
+
+            movie_id = get_movie_id(title)
+            time.sleep(0.3)  # Rate limiting for API
+            if movie_id:
+                recommended_posters.append(fetch_poster(movie_id))
+            else:
+                recommended_posters.append("https://via.placeholder.com/300x450?text=No+Image")
+
+        return recommended_movies, recommended_posters
 
     selected_movie = st.selectbox("Select a Bollywood movie:", [''] + list(df['Movie_Name'].str.title().values))
 
